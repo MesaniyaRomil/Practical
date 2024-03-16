@@ -1,0 +1,124 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<style>
+    .container {
+        background-color: #f0f0f0; 
+        padding: 20px;
+    }
+</style>
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <label for="txtNumber">Please Enter Numbers</label>
+            <input id="numericInput" class="form-control" onkeypress="return validateInput(event)" placeholder="Enter numbers with commas" />
+        </div>
+        
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <input type="checkbox" class="form-check-input" id="chkSort" />
+            <label class="form-check-label" for="chkSort">click to Sort in Asending</label>
+        </div>
+        <div class="col-md-3">
+            <button id="btnsubmit" class="btn btn-primary">Sort</button>
+        </div>
+    </div>
+    <div id="reuslt" hidden class="row">
+    <div class="col-md-6">
+            <label>Original array:</label>
+        <input id="numericInput1" class="form-control" readonly placeholder="Enter numbers with commas" />
+    </div>
+        <div class="col-md-6">
+            <label id="asending">Asending Order Sorted array :</label>  <label id="descending">descending Order Sorted array :</label>
+            <input type="text" class="form-control" disabled id="txtSortarray" />
+        </div>
+    </div>
+
+    <div id="reuslt1" hidden class="row">
+        <div class="col-md-12">
+            <a class="btn btn-success" asp-action="Export" asp-controller="Home">Export</a>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function () {
+        $("#btnsubmit").click(function () {
+            //alert("clicked");
+            
+            var inputString = $('#numericInput').val();
+            if (inputString.charAt(inputString.length - 1) == ',') {
+                var shortenedString = inputString.substr(0, (inputString.length - 1));
+                $('#numericInput').val(shortenedString);
+            }
+
+            document.getElementById("reuslt").hidden = false;
+            document.getElementById("reuslt1").hidden = false;
+            var srtdata = {};
+            $("#numericInput1").val($("#numericInput").val());
+            srtdata.numbers = $("#numericInput").val();
+            srtdata.IsAsc = $("#chkSort").val();
+            //debugger
+        
+
+            var isAsc = $('input[id="chkSort"]');
+            console.log(isAsc[0]);
+            var chk = isAsc[0].checked
+            if (chk == true) {
+                $("#descending").hide();
+                $("#asending").show();
+            }
+            else {
+                $("#descending").show();
+                $("#asending").hide();
+            }
+            $.ajax({
+                type: "POST",
+                url: '/Home/SortOrder?numbers=' + $("#numericInput").val() + '&IsAsc=' + chk,
+                data: JSON.stringify(srtdata),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (res) {
+                    console.log(res);
+                    $("#txtSortarray").val(res.sortedarray);
+                },
+                error: function () {
+                    alert("Error while inserting data");
+                }
+            });
+
+
+        });
+
+        
+
+    });
+    function validateInput(event) {
+
+        var input = document.getElementById("numericInput");
+        var currentValue = input.value;
+        var keyCode = event.which || event.keyCode;
+        var char = String.fromCharCode(keyCode);
+        if (/[0-9,]/.test(char)) {
+
+            if (char === ",") {
+                if (currentValue.slice(-1) === ",") {
+                    event.preventDefault();
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            event.preventDefault();
+            return false;
+        }
+    }
+
+</script>
